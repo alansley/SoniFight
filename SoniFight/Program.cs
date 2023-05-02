@@ -154,8 +154,8 @@ namespace au.edu.federation.SoniFight
             //       when the value crosses the trigger threshold.
 
             // Strings used for comparisons
-            string stringA = "";
-            string stringB = "";
+            string stringA = string.Empty;
+            string stringB = string.Empty;
 
             // Guard against user moving to edit tab where triggers are temporarily reset and there is no previous value
             if (t.PreviousValueList.Count > 0)
