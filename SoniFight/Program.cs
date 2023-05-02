@@ -76,23 +76,14 @@ namespace au.edu.federation.SoniFight
         static void Main()
         {
             // Set our 64-bit flag depending on whether this is the 32-bit or 64-bit build of the pointer chain tester
-            if (System.Environment.Is64BitProcess)
-            {
-                is64Bit = true;
-            }
-            else
-            {
-                is64Bit = false;
-            }
+            is64Bit = System.Environment.Is64BitProcess;
 
             // At some point we may wish to have this as a Windows Application (not a Console Application) and attach a console to it.
             // This comes with some caveats like you can't cleanly pipe output to file from it, so I'll leave it for now. In the below
             // AttachConsole call -1 means attach to the parent process, and we also need the native AttachConsole method from kernel32.dll.
             AttachConsole(-1);
 
-            // ----- Culture Localisation -----
-
-            Console.WriteLine();
+            // ----- Culture Localisation -----            
             Console.WriteLine("Original culture           : " + CultureInfo.CurrentCulture.DisplayName);
             Console.WriteLine("Original UI culture        : " + CultureInfo.CurrentUICulture.DisplayName);
             string temp;
@@ -114,8 +105,6 @@ namespace au.edu.federation.SoniFight
             Console.WriteLine("New default culture   : " + CultureInfo.DefaultThreadCurrentCulture.DisplayName);
             Console.WriteLine("New default UI culture: " + CultureInfo.DefaultThreadCurrentUICulture.DisplayName);
             Console.WriteLine();
-
-            // ----- End of localisation section -----
 
             // Prepare sonficiation background worker...
             sonificationBGW.DoWork += performSonification;      // Specify the work method - this runs when RunWorkerAsync is called
@@ -152,8 +141,7 @@ namespace au.edu.federation.SoniFight
                 // IrrKlang cleanup (unload and samples and dispose of player)
                 irrKlang.ShutDown();
             }            
-        }
-  
+        }  
 
         // This method checks for successful comparisons between a trigger and the value read from a watch.
         // Note: Because a trigger may be associated with a number of watches we must provide the index of the watch value we're comparing against.
@@ -165,15 +153,7 @@ namespace au.edu.federation.SoniFight
             // Also: The 'opposite' comparison checks using the previous value below stop multiple retriggers of a sample as the sample only activates
             //       when the value crosses the trigger threshold.
 
-            // If this trigger has dependencies then we must follow them and check them also. That is, as well as this trigger matching its criteria,
-            // all dependent triggers must also match theirs. If the only dependent trigger is -1 then we'll reset the count to 0 and treat it like there
-            // aren't any dependencies, because really there aren't.
-            /*int triggerDependencyCount = t.SecondaryIdList.Count;
-            if (t.SecondaryIdList.Count > 0 && t.SecondaryIdList[0] == -1)
-            {
-                triggerDependencyCount = 0;
-            }*/
-
+            // Strings used for comparisons
             string stringA = "";
             string stringB = "";
 
@@ -187,7 +167,6 @@ namespace au.edu.federation.SoniFight
                     switch (t.comparisonType)
                     {
                         case Trigger.ComparisonType.EqualTo:
-
                             // We'll perform all 'equal-to' comparisons as strings
                             stringA = Convert.ToString(watchValue,invariantCulture);
                             stringB = Convert.ToString(t.Value, invariantCulture);
@@ -489,8 +468,7 @@ namespace au.edu.federation.SoniFight
             dynamic lastClock = null;
             bool foundMatch;
             string now = DateTime.Now.ToString();
-            string previousNow = DateTime.Now.ToString();
-            
+            string previousNow = DateTime.Now.ToString();            
 
             // While SoniFight has not been stopped or closed we'll provide sonification...            
             while (!e.Cancel)
@@ -502,7 +480,6 @@ namespace au.edu.federation.SoniFight
                     Console.WriteLine(now);
                     previousNow = now.ToString(); // Overwrite previous contents of now with the current 'now' time
                 }
-
 
                 // Update all active watch destination addresses (this must happen once per poll)
                 Watch w;
@@ -682,8 +659,7 @@ namespace au.edu.federation.SoniFight
                     // Only once we've set any/all continuous samples to play in the above loop do we set the flag so that multiple copies of the same trigger don't get activated!
                     Program.irrKlang.PlayingContinuousSamples = true;
 
-                } // End of continuous trigger section
-                
+                } // End of continuous trigger section                
 
                 // ----- Process normal triggers ----- 
                                 
@@ -756,11 +732,6 @@ namespace au.edu.federation.SoniFight
                                 } // End of loop over dependent triggers
 
                             } // End of is secondary ID list is not -1 and we're not on the first watch in the watch list block
-
-                            /*if (dependentTriggerMatch)
-                            {
-                                Console.WriteLine("All dependent triggers matched");
-                            }*/
 
                             // Our trigger matched and any/all dependent triggers also matched so we can proceess the sonification event
                             if (dependentTriggerMatch)
@@ -847,23 +818,7 @@ namespace au.edu.federation.SoniFight
                     //Console.WriteLine("After watch loop");
 
                 } // End of loop over normal triggers
-
-                //Console.WriteLine("After normal trigger loop");
-
-                /*
-                // There are other conditions under which we can skip processing triggers - such as...
-                if ( (t.allowanceType == Trigger.AllowanceType.InGame && Program.gameState == GameState.InMenu)  ||  // ...if the trigger allowance and game state don't match...
-                     (t.allowanceType == Trigger.AllowanceType.InMenu && Program.gameState == GameState.InGame)  ||  // ...both ways, or... 
-                     (Program.gameState != Program.previousGameState)                                            ||  // ...if we haven't been in this game state for 2 'ticks' or...
-                     (t.IsClock)                                                                                 ||  // ...if this is the clock trigger or...
-                     (!t.active) )                                                                                   // ...if the trigger is not active.
-                {
-                    // Skip the rest of the loop for this trigger
-                    continue;
-                }
-                */
-
-
+               
                 // ----- Process modifier triggers ----- 
 
                 // No need to reset foundMatch here, it gets overwritten with a new value below!
@@ -947,51 +902,14 @@ namespace au.edu.federation.SoniFight
 
                 } // End of modifier triggers section
 
-                //Console.WriteLine("After modifier trigger loop");
-
-                // Process dependent triggers ready for the next poll
-                /*for (int normalTriggerLoop = 0; normalTriggerLoop < gc.normalTriggerList.Count; ++normalTriggerLoop)
-                {
-                    // Grab a trigger
-                    t = MainForm.gameConfig.normalTriggerList[normalTriggerLoop];
-
-                    // If this is a dependency trigger update the current and previous values of it
-                    if (t.triggerType == Trigger.TriggerType.Dependent)
-                    {
-                        t.PreviousValueList[0] = t.Value;
-                        t.Value = Utils.getWatchWithId(t.WatchIdList[0]).getDynamicValueFromType();
-                    }
-                }*/
-
                 // --- Pull any normal trigger samples from the queue and play them if we're not already playing a normal sample
-
-                if (!Program.irrKlang.PlayingNormalSample)
-                {
-                    Program.irrKlang.PlayQueuedNormalSample();
-                }
+                if (!Program.irrKlang.PlayingNormalSample) { Program.irrKlang.PlayQueuedNormalSample(); }
 
                 // Did the user hit the stop button to cancel sonification? In which case do so!
-                if (sonificationBGW.CancellationPending && sonificationBGW.IsBusy)
-                {
-                    e.Cancel = true;
-                }
+                if (sonificationBGW.CancellationPending && sonificationBGW.IsBusy) { e.Cancel = true; }
 
                 // Update the SoundEngine
                 Program.irrKlang.UpdateEngines();
-
-                // Have we lost connection to the process? (e.g. the game process has been closed)                
-                /*
-                if (gc.gameProcess.HasExited) // && !reconnectingToProcess)
-                {
-                    Console.WriteLine("Lost connection to game process - attempting to reconnect.");
-                    connectedToProcess = false;
-                    //reconnectingToProcess = true;
-
-                    // Wait five seconds to let the process completely close - and then attempt to reconnect to it
-                    Thread.Sleep(5000);
-                    gc.activate();
-                } 
-                */
 
                 // Finally, after looping over all triggers we sleep for the amount of time specified in the GameConfig
                 Thread.Sleep(MainForm.gameConfig.PollSleepMS);
